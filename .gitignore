@@ -1,0 +1,11 @@
+# Build outputs
+dist/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Temporary files
+*.tmp
+*.log

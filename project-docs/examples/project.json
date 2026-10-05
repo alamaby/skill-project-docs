@@ -1,0 +1,8 @@
+{
+  "brand": "Acme Docs",
+  "name": "Acme Platform",
+  "description": "High-performance distributed services and automation tools.",
+  "docs_version": "1.0.0",
+  "repository_root": ".",
+  "stack": ["powershell", "python", "typescript"]
+}
