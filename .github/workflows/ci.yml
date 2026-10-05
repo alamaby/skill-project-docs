@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test Project-Docs Scaffolding, Build & Validation
+        shell: pwsh
+        run: |
+          $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "pdocs-ci-test-$([System.Guid]::NewGuid().ToString('N'))"
+          Write-Host "Creating test environment in: $tempDir"
+          Copy-Item -Recurse ./project-docs $tempDir
+          
+          try {
+            Write-Host "==> 1. Testing Scaffolding & Initial Build (-Init)..."
+            pwsh -File (Join-Path $tempDir "tools/Build-ProjectDocs.ps1") -Init
+            
+            Write-Host "==> 2. Testing Integrity & Link Verification (-ValidateOnly)..."
+            pwsh -File (Join-Path $tempDir "tools/Build-ProjectDocs.ps1") -ValidateOnly
+            
+            Write-Host "==> 3. Verifying Scaffolding Artifacts..."
+            $requiredFiles = @(
+              "index.html",
+              "changelog.html",
+              "architecture.html",
+              "data/project.json",
+              "data/releases.json",
+              "data/architecture/current.json",
+              "data/changes/index.json"
+            )
+            foreach ($file in $requiredFiles) {
+              $target = Join-Path $tempDir $file
+              if (-not (Test-Path $target)) {
+                throw "Missing expected scaffolded file: $file"
+              }
+            }
+            Write-Host "All required files verified successfully!"
+          }
+          finally {
+            Remove-Item -Recurse -Force $tempDir -ErrorAction SilentlyContinue
+          }

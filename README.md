@@ -1,6 +1,7 @@
 # skill-project-docs
 
 [![PowerShell 5.1+](https://img.shields.io/badge/PowerShell-5.1%20%7C%207%2B-blue.svg?logo=powershell)](https://github.com/PowerShell/PowerShell)
+[![CI](https://github.com/alamaby/skill-project-docs/actions/workflows/ci.yml/badge.svg)](https://github.com/alamaby/skill-project-docs/actions/workflows/ci.yml)
 [![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-success.svg)](https://github.com/alamaby/skill-project-docs)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)](#)
 [![Agent Skill Standard](https://img.shields.io/badge/Agent%20Skill-Cross--Harness-orange.svg)](#cross-harness-usage)
@@ -231,6 +232,22 @@ Options:
   -ValidateOnly   Validates data and internal links without writing HTML or dist/.
   -DocsRoot       Specifies an alternate documentation root directory.
   -DistDir        Specifies an alternate production output directory.
+```
+
+---
+
+## Continuous Integration (CI)
+
+This repository includes a multiplatform GitHub Actions workflow ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) that validates documentation on every push and pull request across Linux (`ubuntu-latest`) and Windows (`windows-latest`):
+
+- **Automated Scaffolding Test:** Verifies that `-Init` cleanly scaffolds directories, starter data manifests, HTML components, and tools without errors.
+- **21-Key Schema Validation:** Verifies that change entries satisfy all mandatory fields, date/time formats, unique IDs, and category tags.
+- **Link Integrity Check:** Traverses all generated HTML pages to ensure zero broken relative links.
+
+To run verification locally before pushing changes:
+
+```powershell
+pwsh project-docs/tools/Build-ProjectDocs.ps1 -ValidateOnly
 ```
 
 ---
