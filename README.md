@@ -68,11 +68,137 @@ skill-project-docs/
 
 ---
 
-## Quickstart
+## Quickstart (AI Agent First)
+
+`skill-project-docs` is designed to be autonomous when paired with an AI coding agent. Once installed, **you never have to craft JSON manifests or run build commands manually**.
+
+Simply trigger the skill in your harness using the slash command:
+
+```text
+/project-docs
+```
+
+Or prompt your agent naturally:
+- *"Use `/project-docs` to bootstrap the documentation website for this repository."*
+- *"Document the changes introduced in the latest git commits using `/project-docs` and rebuild the site."*
+- *"Create release notes for version v1.2.0 with `/project-docs`."*
+
+### What the AI Agent Handles Automatically
+1. **Repository Auto-Detection:** Inspects your project's `git log`, dependencies (`package.json`, `go.mod`, `Cargo.toml`, etc.), and architecture components.
+2. **One-Command Scaffolding:** Runs `Build-ProjectDocs.ps1 -Init` if `project-docs/` is not yet initialized.
+3. **Structured 21-Key Manifests:** Drafts verified change records under `project-docs/data/changes/YYYY-MM-DD-<slug>.json` adhering strictly to the schema.
+4. **Static Rendering & Link Verification:** Executes the build generator, renders HTML pages, verifies internal relative links, and outputs production assets to `dist/project-docs/`.
+
+---
+
+## Installation by Harness
+
+Install `skill-project-docs` once, and use it across any repository with your preferred AI coding harness:
+
+### 1. Antigravity & Gemini CLI
+
+- **Global Installation (Available across all projects):**
+  - **Linux / macOS:**
+    ```bash
+    git clone --depth 1 https://github.com/alamaby/skill-project-docs.git /tmp/pdocs
+    mkdir -p ~/.gemini/config/skills
+    cp -r /tmp/pdocs/project-docs ~/.gemini/config/skills/project-docs
+    rm -rf /tmp/pdocs
+    ```
+  - **Windows (PowerShell):**
+    ```powershell
+    git clone --depth 1 https://github.com/alamaby/skill-project-docs.git "$env:TEMP\pdocs"
+    New-Item -ItemType Directory -Force "$HOME\.gemini\config\skills" | Out-Null
+    Copy-Item -Recurse "$env:TEMP\pdocs\project-docs" "$HOME\.gemini\config\skills\project-docs"
+    Remove-Item -Recurse -Force "$env:TEMP\pdocs"
+    ```
+
+- **Workspace Installation (Committed to a specific repository):**
+  Place `project-docs` in `.agents/skills/project-docs/` in your repository root.
+
+### 2. Claude Code
+
+- **Global Installation:**
+  - **Linux / macOS / WSL:**
+    ```bash
+    git clone --depth 1 https://github.com/alamaby/skill-project-docs.git /tmp/pdocs
+    mkdir -p ~/.claude/skills
+    cp -r /tmp/pdocs/project-docs ~/.claude/skills/project-docs
+    rm -rf /tmp/pdocs
+    ```
+  - **Windows (PowerShell):**
+    ```powershell
+    git clone --depth 1 https://github.com/alamaby/skill-project-docs.git "$env:TEMP\pdocs"
+    New-Item -ItemType Directory -Force "$HOME\.claude\skills" | Out-Null
+    Copy-Item -Recurse "$env:TEMP\pdocs\project-docs" "$HOME\.claude\skills\project-docs"
+    Remove-Item -Recurse -Force "$env:TEMP\pdocs"
+    ```
+
+- **Project Level:**
+  Place `project-docs` in `.claude/skills/project-docs/` or `.agents/skills/project-docs/`.
+  Invoke directly in Claude Code CLI via `/project-docs`.
+
+### 3. OpenCode
+
+Register `skill-project-docs` in your `opencode.json` (workspace root or global `~/.config/opencode/opencode.json`):
+
+```json
+{
+  "skills": [
+    "https://github.com/alamaby/skill-project-docs"
+  ]
+}
+```
+
+*Or point to a local directory clone:*
+
+```json
+{
+  "skills": [
+    "./path/to/skill-project-docs/project-docs"
+  ]
+}
+```
+
+OpenCode discovers the skill and registers `/project-docs` automatically.
+
+### 4. Codex (OpenAI Codex CLI)
+
+Install into the universal `.agents/skills/` convention in your workspace:
+
+- **Linux / macOS:**
+  ```bash
+  mkdir -p .agents/skills
+  git clone --depth 1 https://github.com/alamaby/skill-project-docs.git /tmp/pdocs
+  cp -r /tmp/pdocs/project-docs .agents/skills/project-docs
+  rm -rf /tmp/pdocs
+  ```
+- **Windows (PowerShell):**
+  ```powershell
+  New-Item -ItemType Directory -Force ".agents\skills" | Out-Null
+  git clone --depth 1 https://github.com/alamaby/skill-project-docs.git "$env:TEMP\pdocs"
+  Copy-Item -Recurse "$env:TEMP\pdocs\project-docs" ".agents\skills\project-docs"
+  Remove-Item -Recurse -Force "$env:TEMP\pdocs"
+  ```
+
+Codex will automatically discover `SKILL.md` when prompted:
+```bash
+codex "Use /project-docs to initialize documentation for this project"
+```
+
+### 5. Cursor, Windsurf & Cline
+
+Place `project-docs` in `.agents/skills/project-docs/` within your project repository. The standard `SKILL.md` frontmatter is automatically indexed by the workspace tool coordinator.
+
+---
+
+## Standalone / Manual CLI Usage (No AI or CI Pipelines)
+
+If you are not using an AI agent, or are integrating into automated build scripts and CI/CD pipelines, you can run the generator directly:
 
 ### Step 1: Scaffold Documentation in Your Repository
 
-Copy the `project-docs/` directory into your repository, then run the generator with the `-Init` flag:
+Copy the `project-docs/` directory into your repository, then run:
 
 ```powershell
 # Using PowerShell Core (Windows, Linux, macOS)
@@ -82,11 +208,9 @@ pwsh project-docs/tools/Build-ProjectDocs.ps1 -Init
 powershell -ExecutionPolicy Bypass -File project-docs/tools/Build-ProjectDocs.ps1 -Init
 ```
 
-The `-Init` flag automatically creates all missing folders, copies starter templates, seeds baseline data, renders the initial pages, verifies links, and compiles `dist/project-docs/`.
-
 ### Step 2: Configure Project Metadata
 
-Edit `project-docs/data/project.json` to reflect your project identity:
+Edit `project-docs/data/project.json` to define brand, name, and stack:
 
 ```json
 {
@@ -101,7 +225,7 @@ Edit `project-docs/data/project.json` to reflect your project identity:
 
 ### Step 3: Record Verified Changes
 
-Add individual JSON files for each change under `project-docs/data/changes/YYYY-MM-DD-<slug>.json`:
+Add individual change files under `project-docs/data/changes/YYYY-MM-DD-<slug>.json`:
 
 ```json
 {
@@ -140,51 +264,7 @@ Add individual JSON files for each change under `project-docs/data/changes/YYYY-
 pwsh project-docs/tools/Build-ProjectDocs.ps1
 ```
 
-The generator will:
-1. Validate all fields against the 21-key schema.
-2. Sort changes and update `data/changes/index.json`.
-3. Generate permanent detail pages in `changes/YYYY/MM/<slug>.html`.
-4. Generate release pages in `releases/<version>.html`.
-5. Update homepage cards, timeline, stats table, and filter dropdowns.
-6. Verify all relative internal links.
-7. Output the static build to `dist/project-docs/`.
-
----
-
-## Cross-Harness Usage
-
-`skill-project-docs` adheres to open agent skill specifications, enabling immediate plug-and-play use across modern AI coding agents.
-
-### Antigravity & Gemini CLI
-
-To make this skill available across your projects in Antigravity or Gemini CLI:
-
-- **Workspace level:** Clone or copy `project-docs` to `.agents/skills/project-docs/` in your workspace.
-- **Global level:** Place in `~/.gemini/config/skills/project-docs/`.
-
-Once registered, your agent can be prompted with:
-> *"Use project-docs to document the recent changes from git commit HEAD and rebuild the docs site."*
-
-### Claude Code
-
-- Copy `project-docs` into `.claude/skills/project-docs/` or `.agents/skills/project-docs/`.
-- Claude Code will discover `SKILL.md` and trigger it when asked to maintain changelogs or project documentation.
-
-### OpenCode
-
-Register this repository in your `opencode.json`:
-
-```json
-{
-  "skills": ["c:/Works/github.com/alamaby/skill-project-docs"]
-}
-```
-
-OpenCode discovers the skill under the identifier `project-docs`.
-
-### Cursor, Codex, Windsurf & Cline
-
-Place `project-docs/` in `.agents/skills/project-docs/`. The standard frontmatter in `SKILL.md` is automatically indexed for on-demand tool execution.
+The generator will validate schemas, compile `index.json`, render HTML detail and release pages, update all homepage cards, verify internal links, and assemble `dist/project-docs/`.
 
 ---
 
